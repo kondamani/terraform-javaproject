@@ -12,9 +12,9 @@ pipeline {
 
   environment {
     SONAR_URL = "http://3.86.34.17:9000/"
-    GIT_REPO_URL = "https://github.com/kondamani/JAVA_PROJECT.git"
+    GIT_REPO_URL = "https://github.com/kondamani/terraform-javaproject.git"
     GIT_USER_NAME = "kondamani"
-    GIT_REPO_NAME = "JAVA_PROJECT"
+    GIT_REPO_NAME = "Jterraform-javaproject"
     WORKDIR = "${WORKSPACE}"
     HELM_PATH = "https://github.com/kondamani/HELM-CHART.git"
   }
