@@ -1,0 +1,120 @@
+pipeline {
+  agent {
+    docker {
+      image 'kondamani/newimgjava:v1'
+      args '-u root --privileged -v /var/run/docker.sock:/var/run/docker.sock'
+    }
+  }
+
+  options {
+    skipDefaultCheckout(true)
+  }
+
+  environment {
+    SONAR_URL = "http://3.86.34.17:9000/"
+    GIT_REPO_URL = "https://github.com/kondamani/JAVA_PROJECT.git"
+    GIT_USER_NAME = "kondamani"
+    GIT_REPO_NAME = "JAVA_PROJECT"
+    WORKDIR = "java-maven-sonar-argocd-helm-k8s/spring-boot-app"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        sh 'echo "🔧 Starting Git Checkout"'
+        sh 'rm -rf * .git || true'
+        sh 'git config --global --add safe.directory `pwd`'
+        git branch: 'main', url: "${GIT_REPO_URL}"
+      }
+    }
+
+    stage('Debug Git Info') {
+      steps {
+        sh '''
+          echo "📁 Workspace contents:"
+          ls -al
+
+          echo "📌 Current directory:"
+          pwd
+
+          echo "🌀 Git status:"
+          git status || echo "⚠️ Git status failed, maybe not a repoo"
+        '''
+      }
+    }
+
+    stage('Build and Test') {
+      steps {
+        sh '''
+          echo "🛠️ Building Maven Project"
+          cd ${WORKDIR}
+          mvn clean package
+        '''
+      }
+    }
+
+    stage('Static Code Analysis') {
+      steps {
+        withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+          sh '''
+            echo "📊 Running SonarQube Analysis"
+            cd ${WORKDIR}
+            mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=$SONAR_URL
+          '''
+        }
+      }
+    }
+
+    stage('Build and Push Docker Image') {
+      environment {
+        DOCKER_IMAGE = "kondamani/javaproject:${BUILD_NUMBER}"
+      }
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          sh '''
+            echo "🐳 Building Docker Image"
+            cd ${WORKDIR}
+            docker build -t ${DOCKER_IMAGE} .
+
+            echo "🔐 Logging in to Docker Hub"
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
+            echo "📤 Pushing Docker Image"
+            docker push ${DOCKER_IMAGE}
+          '''
+        }
+      }
+    }
+    stage('Scan Docker Image with Trivy') {
+     steps {
+      sh '''
+        echo "🔍 Scanning Docker Image with Trivy"
+        wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.64.1_Linux-64bit.tar.gz
+        tar zxvf trivy_0.64.1_Linux-64bit.tar.gz
+        mv trivy /usr/local/bin/
+        trivy image ${DOCKER_IMAGE} || true
+      '''
+     }
+   }
+    stage('Tag and Push Git Tag') {
+      steps {
+        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+          sh '''
+            git config --global user.email "m.kondamani1985@gmail.com"
+            git config --global user.name "${GIT_USER_NAME}"
+            git tag -a v${BUILD_NUMBER} -m "Release v${BUILD_NUMBER}"
+            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git v${BUILD_NUMBER}
+          '''
+        }
+      }
+    }
+     stage('Trigger Deployment Pipeline') {
+      steps {
+        build job: 'Jenkins-deploy',
+          parameters: [
+            string(name: 'TAG', value: "v${BUILD_NUMBER}")
+          ]
+      }
+    } 
+  }
+}

@@ -1,0 +1,28 @@
+replicaCount: 2
+
+image:
+  repository: kondamani/javaproject
+  tag: "181"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+app:
+  name: java-app
+
+ingress:
+  enabled: true
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/group.name: java-app
+  hosts:
+    - host: java-app.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+
