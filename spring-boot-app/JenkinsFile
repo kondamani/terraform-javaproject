@@ -109,28 +109,14 @@ pipeline {
         }
       }
     }
-    stage('Update Helm Chart and Push') {
-    steps {
-      script {
-        withCredentials([string(credentialsId: 'githu', variable: 'GITHUB_TOKEN')]) {
-            sh '''#!/bin/bash
-            echo "🔧 Updating values.yaml with image tag $TAG"
-            cd app/${WORKDIR}/${HELM_PATH}
-            sed -i "s/tag: .*/tag: \\"${TAG//v}\\"/" values.yaml
-
-            echo "📦 Committing changesccssss"
-            #cd ../../../..
-            #git config --global user.email "m.kondamani1985@gmail.com"
-            #git config --global user.name "kondamani"
-            #git remote set-url origin https://${GITHUB_TOKEN}@github.com/kondamani/JAVA_PROJECT.git
-            #git add .
-            #git commit -m "🔖 Update image tag to ${TAG}"
-            #git push origin HEAD:main
-          '''
-         }
-       }
-     }
-   }
-      
+    stage('Trigger Deployment Pipeline') {
+      steps {
+        build job: 'Jenkins-deploy',
+          parameters: [
+            string(name: 'TAG', value: "v${BUILD_NUMBER}")
+          ]
+      }
+    } 
+       
   }
 }
