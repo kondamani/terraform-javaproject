@@ -14,7 +14,7 @@ pipeline {
     SONAR_URL = "http://3.89.109.17:9000/"
     GIT_REPO_URL = "https://github.com/kondamani/terraform-javaproject.git"
     GIT_USER_NAME = "kondamani"
-    GIT_REPO_NAME = "spring-boot-app"
+    GIT_REPO_NAME = "spring-boot-app/JenkinsFile"
     WORKDIR = "${WORKSPACE}"
     HELM_PATH = "https://github.com/kondamani/HELM-CHART.git"
   }
