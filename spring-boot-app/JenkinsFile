@@ -99,7 +99,7 @@ pipeline {
    }
     stage('Tag and Push Git Tag') {
       steps {
-        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+        withCredentials([string(credentialsId: 'githu', variable: 'GITHUB_TOKEN')]) {
           sh '''
             git config --global user.email "m.kondamani1985@gmail.com"
             git config --global user.name "${GIT_USER_NAME}"
