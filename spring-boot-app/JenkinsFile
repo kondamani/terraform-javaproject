@@ -38,7 +38,7 @@ pipeline {
           echo "📌 Current directory:"
           pwd
 
-          echo "🌀 Git stssatus:"
+          echo "🌀 Gitggg stssatus:"
           git status || echo "⚠️ Git status failed, maybe not a repoo"
         '''
       }
