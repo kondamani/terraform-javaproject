@@ -22,7 +22,7 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        sh 'echo "🔧 Startinggggg Git Checkout"'
+        sh 'echo "🔧 Startinggggg Git Checcckout"'
         sh 'rm -rf * .git || true'
         sh 'git config --global --add safe.directory `pwd`'
         git branch: 'feature/javaterreks', url: "${GIT_REPO_URL}"
