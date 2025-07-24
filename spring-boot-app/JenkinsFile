@@ -15,7 +15,7 @@ pipeline {
     GIT_REPO_URL = "https://github.com/kondamani/terraform-javaproject.git"
     GIT_USER_NAME = "kondamani"
     GIT_REPO_NAME = "terraform-javaproject"
-    WORKDIR = "${WORKSPACE}"
+    WORKDIR = "spring-boot-app"
     HELM_PATH = "https://github.com/kondamani/HELM-CHART.git"
   }
 
